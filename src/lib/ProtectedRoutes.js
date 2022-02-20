@@ -1,12 +1,13 @@
-import React, {Component} from 'react';
+import React, {useContext} from 'react';
 import { Navigate } from 'react-router-dom';
+import UserContext from '../context/Context';
 
-export const UserRoutes = ({Component}) => {
-    const userId = localStorage.getItem('userId')
-    const adminId = localStorage.getItem('adminId')
-    const moderatorId = localStorage.getItem('moderatorId')
+export const UserRoutes = ({Component}) => { 
 
-    if (userId || adminId || moderatorId) {
+    const {user, setUser}  = useContext(UserContext);
+    const role = (Object.keys(user).length === 0 && user.constructor === Object) ? null : user.roles[0]  
+
+    if (role === "CUSTOMER" || role === "ADMIN" || role === "MODERATOR") {
         return <Component />
     }
     else {
@@ -15,9 +16,11 @@ export const UserRoutes = ({Component}) => {
 }
 
 export const CustomerRoutes = ({Component}) => {
-    const userId = localStorage.getItem('userId')
 
-    if (userId) {
+    const {user, setUser}  = useContext(UserContext);
+    const role = (Object.keys(user).length === 0 && user.constructor === Object) ? null : user.roles[0]  
+
+    if (role === "CUSTOMER") {
         return <Component />
     }
     else {
@@ -26,10 +29,10 @@ export const CustomerRoutes = ({Component}) => {
 }
 
 export const AdminModeratorRoutes = ({Component}) => {
-    const adminId = localStorage.getItem('adminId')
-    const moderatorId = localStorage.getItem('moderatorId')
+    const {user, setUser}  = useContext(UserContext);
+    const role = (Object.keys(user).length === 0 && user.constructor === Object) ? null : user.roles[0]  
 
-    if (adminId || moderatorId) {
+    if (role === "ADMIN" || role === "MODERATOR") {
         return <Component />
     }
     else {

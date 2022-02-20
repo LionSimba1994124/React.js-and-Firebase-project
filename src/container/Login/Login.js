@@ -1,54 +1,55 @@
-import React, {useState} from 'react';
+import React, {useState, useContext, useEffect} from 'react';
 import "./Login.css";
 import { useNavigate } from 'react-router-dom';
-import {Button, Form, FormControl, InputGroup} from "react-bootstrap";
-import mockData from "../../Mock";
+import {Button, Form, FormControl, InputGroup, Alert} from "react-bootstrap";
+import UserContext from '../../context/Context'; 
+import { logInWithEmailAndPassword, GoogleSignin } from '../../firebase/Auth'; 
 
-const Login = () => {
-    const [loginData, setLoginData] = useState({})
+
+const UserLogin = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+   
+    const [loginError, setloginError] = useState('');
     const navigate = useNavigate();
 
-    const loginChangeHandler = (e) => {
-        const {name, value} = e.target;
-
-        setLoginData({
-            ...loginData,
-            [name]: value
-        })
-    }
+    const {user, setUser}  = useContext(UserContext);   
 
     const loginDataHandler = (e) => {
         e.preventDefault();
-
-        const found = mockData.find((user) => {
-            if(user.email === loginData.email && user.password === loginData.password) {
-                return user
+        logInWithEmailAndPassword(email, password)
+        .then((data)=>{            
+            if(data.error !== ''){
+                setloginError(data.error);
             }
-        })
-
-        if (found) {
-            switch (found.roles) {
-                case 'CUSTOMER':
-                    localStorage.setItem("userId", found.id);
-                    navigate('/user-profile')
-                    break;
-                case 'ADMIN':
-                    localStorage.setItem("adminId", found.id);
-                    navigate('/monitor-page')
-                    break;
-                case 'MODERATOR':
-                    localStorage.setItem("moderatorId", found.id);
-                    navigate('/manage-ads')
-                    break;
-                default:
-                    navigate('/login')
-                    break;
+            else{                
+                setUser(data.profile); 
+                document.cookie=`userToken=${data.token}`;
+                navigate('/user-profile');
             }
-        }
-        else {
-            alert('incorrect email or password')
-        }
+        });         
+    }    
+
+    // const googleSigninHandle = () => {            
+    //     GoogleSignin()
+    //         .then((data)=>{
+    //             setUser(data.profile);
+    //             document.cookie=`userToken=${data.token}`;
+    //             navigate('/user-profile');              
+    //         })
+    // }    
+
+    const validateEmail = (email) =>{        
+        return email.match(
+            /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
     }
+
+    const isValid =
+        !validateEmail(email) ||
+        password === '';
+
+
     return (
         <React.Fragment>
             <div className="main-login-div">
@@ -58,14 +59,14 @@ const Login = () => {
                             <h4>Login Form</h4>
                             <hr />
                             <Form onSubmit={loginDataHandler}>
-
                                 <InputGroup className="mb-3">
                                     <FormControl
                                         type={'email'}
                                         placeholder="Enter Email"
                                         name="email"
                                         aria-label="email"
-                                        onChange={loginChangeHandler}
+                                        value = {email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         aria-describedby="basic-addon1"
                                     />
                                 </InputGroup>
@@ -75,11 +76,13 @@ const Login = () => {
                                         placeholder="Enter Password"
                                         name="password"
                                         aria-label="password"
-                                        onChange={loginChangeHandler}
+                                        value = {password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                         aria-describedby="basic-addon1"
                                     />
                                 </InputGroup>
-                                <Button type="submit" className='w-100 modal_btn'>LOGIN</Button>
+                                {(loginError !== '') && <Alert variant='danger'>{loginError}</Alert>}
+                                <Button type="submit" disabled={isValid} className='w-100 modal_btn'>LOGIN</Button>
                             </Form>
                         </div>
                     </div>
@@ -89,4 +92,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default UserLogin;

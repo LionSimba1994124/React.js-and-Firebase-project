@@ -6,9 +6,10 @@ import {
     signInWithPopup, 
     GoogleAuthProvider,
     signOut,
-    updateProfile 
+    onAuthStateChanged, 
  } from "firebase/auth";
-import { getStorage } from "firebase/storage";
+
+ import {getFirestore , doc, setDoc, getDoc, addDoc, collection} from "firebase/firestore"; 
 
 const firebaseConfig = {
     apiKey: "AIzaSyARSq5cUJvpXMTWcM_xjWZEqmOVN-TLHqw",
@@ -19,21 +20,24 @@ const firebaseConfig = {
     appId: "1:742200551348:web:0c33a6c462e8ee136e74e1"
 };
 
-initializeApp(firebaseConfig)
+initializeApp(firebaseConfig);
 
-const firebaseApp = initializeApp(firebaseConfig);
-
+const db = getFirestore();
 const auth = getAuth(); 
 const provider = new GoogleAuthProvider();
-const storage = getStorage(firebaseApp);
 
 export {
     auth,
-    provider,
-    storage,
+    provider,   
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signInWithPopup,  
     signOut,
-    updateProfile 
+    onAuthStateChanged,
+    doc,
+    addDoc,
+    collection,
+    setDoc,
+    getDoc,
+    db
 }
